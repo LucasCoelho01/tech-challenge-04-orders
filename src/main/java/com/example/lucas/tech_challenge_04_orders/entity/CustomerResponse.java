@@ -1,12 +1,15 @@
 package com.example.lucas.tech_challenge_04_orders.entity;
 
+import lombok.Data;
+
 import java.util.UUID;
 
+@Data
 public class CustomerResponse {
-    public UUID id;
-    public String username;
-    public String cpf;
-    public String email;
+    private UUID id;
+    private String username;
+    private String cpf;
+    private String email;
 
     public CustomerResponse(){}
 }
