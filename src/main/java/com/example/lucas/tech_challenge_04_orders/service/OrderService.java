@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ public class OrderService {
         });
 
         order.setProducts(productNames);
+        order.setStatus("Recebido");
+        order.setTimestamp(LocalDateTime.now().toString());
 
         orderRepository.save(order);
 

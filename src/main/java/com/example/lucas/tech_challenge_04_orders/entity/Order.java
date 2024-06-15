@@ -7,10 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 @Data
-@Document
+@Document(collection = "orders")
 public class Order {
     @Id
     private String id;
     private String customer;
     private List<String> products;
+    private String status;
+    private String timestamp;
 }
