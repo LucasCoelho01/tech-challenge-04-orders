@@ -16,6 +16,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -45,7 +46,15 @@ public class OrderService {
         return order;
     }
 
-    public CustomerResponse getCustomer(String cpf) {
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Optional<Order> getOrderById(String id) {
+        return orderRepository.findById(id);
+    }
+
+    private CustomerResponse getCustomer(String cpf) {
         CustomerResponse customerResponse = new CustomerResponse();
         try {
             // Creating a URL object
@@ -86,7 +95,7 @@ public class OrderService {
         return customerResponse;
     }
 
-    public ProductResponse getProduct(String productName) {
+    private ProductResponse getProduct(String productName) {
         ProductResponse productResponse = new ProductResponse();
         try {
             // Creating a URL object
