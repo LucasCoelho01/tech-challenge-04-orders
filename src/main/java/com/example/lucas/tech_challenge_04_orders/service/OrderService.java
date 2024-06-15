@@ -4,6 +4,7 @@ import com.example.lucas.tech_challenge_04_orders.entity.CustomerResponse;
 import com.example.lucas.tech_challenge_04_orders.entity.ProductResponse;
 import com.example.lucas.tech_challenge_04_orders.entity.dtos.CreateOrderDto;
 import com.example.lucas.tech_challenge_04_orders.entity.Order;
+import com.example.lucas.tech_challenge_04_orders.entity.dtos.UpdateStatusDto;
 import com.example.lucas.tech_challenge_04_orders.repository.OrderRepository;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,20 @@ public class OrderService {
 
     public Optional<Order> getOrderById(String id) {
         return orderRepository.findById(id);
+    }
+
+    public Optional<Order> updateOrderStatus(String id, boolean isPaymentOk) {
+        Optional<Order> order = getOrderById(id);
+
+        if (order.isPresent()) {
+            if (isPaymentOk) {
+                order.get().setStatus("Pagamento Aprovado");
+            } else {
+                order.get().setStatus("Pagamento Rejeitado");
+            }
+        }
+
+        return order;
     }
 
     private CustomerResponse getCustomer(String cpf) {
