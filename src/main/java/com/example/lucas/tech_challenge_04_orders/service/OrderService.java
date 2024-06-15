@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -31,15 +32,18 @@ public class OrderService {
         order.setCustomer(customerResponse.getUsername());
 
         List<String> productNames = new ArrayList<>();
+        List<ProductResponse> productResponseList = new ArrayList<>();
 
         createOrderDto.products().forEach(product -> {
             ProductResponse productResponse = getProduct(product);
+            productResponseList.add(productResponse);
             productNames.add(productResponse.getName());
         });
 
         order.setProducts(productNames);
-        order.setStatus("Recebido");
+        order.setStatus("Aguardando pagamento");
         order.setTimestamp(LocalDateTime.now().toString());
+        order.setTotalPrice(calculateTotalPrice(productResponseList));
 
         orderRepository.save(order);
 
@@ -134,5 +138,19 @@ public class OrderService {
         }
 
         return productResponse;
+    }
+
+    private BigDecimal calculateTotalPrice(List<ProductResponse> productResponseList) {
+        List<BigDecimal> prices = new ArrayList<>();
+
+        productResponseList.forEach(product -> {
+            prices.add(product.getPrice());
+        });
+
+        BigDecimal totalPrice;
+
+        totalPrice = prices.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalPrice;
     }
 }

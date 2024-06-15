@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -15,4 +16,5 @@ public class Order {
     private List<String> products;
     private String status;
     private String timestamp;
+    private BigDecimal totalPrice;
 }
