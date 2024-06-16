@@ -12,13 +12,17 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Scanner;
 
 @Service
 public class OrderService {
@@ -59,18 +63,46 @@ public class OrderService {
         return orderRepository.findById(id);
     }
 
-    public Optional<Order> updateOrderStatus(String id, boolean isPaymentOk) {
-        Optional<Order> order = getOrderById(id);
+    public Optional<Order> updateOrderStatus(String id, boolean isPaymentOk) throws Exception {
+        var order = getOrderById(id);
+        Order orderFound = order.get();
 
         if (order.isPresent()) {
             if (isPaymentOk) {
                 order.get().setStatus("Pagamento Aprovado");
+                sendOrderToKitchen(orderFound);
             } else {
                 order.get().setStatus("Pagamento Rejeitado");
             }
+            orderRepository.save(orderFound);
         }
 
         return order;
+    }
+
+    public void sendOrderToKitchen(Order order) throws Exception {
+
+        URL url = new URL("http://localhost:8083/api/kitchen");
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setRequestMethod("POST");
+
+        connection.setRequestProperty("Content-type", "application/json");
+
+        connection.setDoOutput(true);
+
+        OutputStream os = connection.getOutputStream();
+
+        String input = (new Gson().toJson(order));
+
+        os.write(input.getBytes());
+
+        int responseCode = connection.getResponseCode();
+
+        os.flush();
+
+        os.close();
     }
 
     private CustomerResponse getCustomer(String cpf) {

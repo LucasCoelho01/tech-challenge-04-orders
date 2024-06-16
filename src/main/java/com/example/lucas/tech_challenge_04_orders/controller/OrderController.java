@@ -37,7 +37,7 @@ public class OrderController {
     }
 
     @PutMapping("/id/{id}")
-    ResponseEntity<Optional<Order>> updateOrderStatus(@PathVariable String id, @RequestBody UpdateStatusDto updateStatusDto) {
+    ResponseEntity<Optional<Order>> updateOrderStatus(@PathVariable String id, @RequestBody UpdateStatusDto updateStatusDto) throws Exception {
         Optional<Order> order = orderService.updateOrderStatus(id, updateStatusDto.isPaymentOk());
 
         return new ResponseEntity<>(order, HttpStatus.OK);
