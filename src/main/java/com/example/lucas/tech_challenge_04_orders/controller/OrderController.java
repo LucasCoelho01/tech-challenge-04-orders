@@ -20,7 +20,7 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    ResponseEntity<Order> createOrder(@RequestBody CreateOrderDto createOrderDto) {
+    ResponseEntity<Order> createOrder(@RequestBody CreateOrderDto createOrderDto) throws Exception {
         return new ResponseEntity<>(orderService.createOrder(createOrderDto), HttpStatus.CREATED);
     }
 
