@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -38,7 +39,10 @@ class OrderServiceTest {
         createOrderDto = new CreateOrderDto("12345678900", List.of("product1", "product2"));
 
         customerResponseDto = new CustomerResponseDto();
-        customerResponseDto.setUsername("testCustomer");
+        customerResponseDto.setId(UUID.randomUUID());
+        customerResponseDto.setUsername("Lucas");
+        customerResponseDto.setCpf("12345678910");
+        customerResponseDto.setEmail("lucas@gmail.com");
 
         productResponseDto = new ProductResponseDto();
         productResponseDto.setName("testProduct");
@@ -58,13 +62,13 @@ class OrderServiceTest {
 
     /*@Test
     void createOrder_success() throws Exception {
-        // Mocking external service calls
-        try (MockedStatic<OrderService> mockedService = mockStatic(OrderService.class)) {
-            mockedService.when(() -> orderService.getCustomer(anyString())).thenReturn(customerResponseDto);
-            mockedService.when(() -> orderService.getProduct(anyString())).thenReturn(productResponseDto);
-            mockedService.when(() -> orderService.sendOrderToPayment(any(Order.class))).thenReturn(true);
-
             when(orderRepository.save(any(Order.class))).thenReturn(order);
+
+            when(orderService.getCustomer(anyString())).thenReturn(customerResponseDto);
+            when(orderService.getProduct(anyString())).thenReturn(productResponseDto);
+            doNothing().when(orderRepository).save(any(Order.class));
+            when(orderService.sendOrderToPayment(any(Order.class))).thenReturn(true);
+            doNothing().when(orderService).sendOrderToKitchen(any(Order.class));
 
             Order createdOrder = orderService.createOrder(createOrderDto);
 
@@ -75,7 +79,6 @@ class OrderServiceTest {
             assertEquals("Pagamento Aprovado", createdOrder.getStatus());
 
             verify(orderRepository, times(1)).save(any(Order.class));
-        }
     }*/
 
     @Test
@@ -125,7 +128,6 @@ class OrderServiceTest {
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
-    // Helper method tests
     @Test
     void calculateTotalPrice_success() {
         List<ProductResponseDto> productResponseDtos = List.of(productResponseDto, productResponseDto);
