@@ -81,7 +81,7 @@ public class OrderService {
 
     public void sendOrderToKitchen(Order order) throws Exception {
 
-        URL url = new URL("http://localhost:8083/api/kitchen");
+        URL url = new URL("http://payment.us-east-1.elasticbeanstalk.com/api/kitchen");
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -107,7 +107,7 @@ public class OrderService {
     CustomerResponseDto getCustomer(String cpf) {
         CustomerResponseDto customerResponseDto = new CustomerResponseDto();
         try {
-            URL url = new URL("http://localhost:8081/api/customers/" + cpf);
+            URL url = new URL("http://customers.us-east-1.elasticbeanstalk.com/api/customers/" + cpf);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -143,7 +143,7 @@ public class OrderService {
     ProductResponseDto getProduct(String productName) {
         ProductResponseDto productResponseDto = new ProductResponseDto();
         try {
-            URL url = new URL("http://localhost:8082/api/products/" + productName);
+            URL url = new URL("http://products.us-east-1.elasticbeanstalk.com/api/products/" + productName);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -196,7 +196,7 @@ public class OrderService {
         PaymentsRequestDto paymentsRequestDto = new PaymentsRequestDto();
         paymentsRequestDto.setOrderId(order.getId());
 
-        URL url = new URL("http://localhost:8084/api/payments");
+        URL url = new URL("http://payment.us-east-1.elasticbeanstalk.com/api/payments");
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
