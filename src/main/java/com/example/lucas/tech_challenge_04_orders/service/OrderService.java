@@ -6,6 +6,7 @@ import com.example.lucas.tech_challenge_04_orders.repository.OrderRepository;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -24,6 +25,7 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    /*@Transactional
     public Order createOrder(CreateOrderDto createOrderDto) throws Exception {
         Order order = new Order();
 
@@ -52,7 +54,7 @@ public class OrderService {
         }
 
         return order;
-    }
+    }*/
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -62,6 +64,7 @@ public class OrderService {
         return orderRepository.findById(id);
     }
 
+    @Transactional
     public Optional<Order> updateOrderStatus(String id, boolean isPaymentOk) throws Exception {
         var order = getOrderById(id);
         Order orderFound = order.get();
@@ -104,7 +107,7 @@ public class OrderService {
         os.close();
     }
 
-    CustomerResponseDto getCustomer(String cpf) {
+    public CustomerResponseDto getCustomer(String cpf) {
         CustomerResponseDto customerResponseDto = new CustomerResponseDto();
         try {
             URL url = new URL("http://customers.us-east-1.elasticbeanstalk.com/api/customers/" + cpf);
@@ -140,7 +143,7 @@ public class OrderService {
         return customerResponseDto;
     }
 
-    ProductResponseDto getProduct(String productName) {
+    public ProductResponseDto getProduct(String productName) {
         ProductResponseDto productResponseDto = new ProductResponseDto();
         try {
             URL url = new URL("http://products.us-east-1.elasticbeanstalk.com/api/products/" + productName);
@@ -176,7 +179,7 @@ public class OrderService {
         return productResponseDto;
     }
 
-    BigDecimal calculateTotalPrice(List<ProductResponseDto> productResponseDtoList) {
+    /*public BigDecimal calculateTotalPrice(List<ProductResponseDto> productResponseDtoList) {
         List<BigDecimal> prices = new ArrayList<>();
 
         productResponseDtoList.forEach(product -> {
@@ -188,9 +191,9 @@ public class OrderService {
         totalPrice = prices.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return totalPrice;
-    }
+    }*/
 
-    boolean sendOrderToPayment(Order order) throws Exception {
+    public boolean sendOrderToPayment(Order order) throws Exception {
         var IspaymentOk = false;
         PaymentResponseDto paymentResponseDto = new PaymentResponseDto();
         PaymentsRequestDto paymentsRequestDto = new PaymentsRequestDto();
