@@ -13,6 +13,12 @@ public class RabbitMQConfig {
     public static final String QUEUE_PRODUCT_REQUEST = "productRequest";
     public static final String QUEUE_PRODUCT_RESPONSE = "productResponse";
 
+    public static final String QUEUE_PAYMENT_REQUEST = "paymentRequest";
+    public static final String QUEUE_PAYMENT_RESPONSE = "paymentResponse";
+
+    public static final String QUEUE_KITCHEN_REQUEST = "kitchenRequest";
+    public static final String QUEUE_KITCHEN_RESPONSE = "kitchenResponse";
+
     @Bean
     public Queue queue() {
         return new Queue(QUEUE_NAME, true);
@@ -34,5 +40,17 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue queue_productsResponse() { return new Queue(QUEUE_PRODUCT_RESPONSE, true); }
+
+    @Bean
+    public Queue queue_paymentRequest() { return new Queue(QUEUE_PAYMENT_REQUEST, true); }
+
+    @Bean
+    public Queue queue_paymentResponse() { return new Queue(QUEUE_PAYMENT_RESPONSE, true); }
+
+    @Bean
+    public Queue queue_kitchenRequest() { return new Queue(QUEUE_KITCHEN_REQUEST, true); }
+
+    @Bean
+    public Queue queue_KitchenResponse() { return new Queue(QUEUE_KITCHEN_RESPONSE, true); }
 }
 

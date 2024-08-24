@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +30,12 @@ public class OrderServiceSaga {
 
     @Transactional
     public Order createOrder(CreateOrderDto createOrderDto) throws Exception {
-        Order order = orderRepository.save(new Order());
+        Order order =new Order();
         order.setStatus("Pedido iniciado");
+        LocalDateTime now = LocalDateTime.now();
+        order.setTimestamp(now.toString());
+
+        orderRepository.save(order);
 
         getCustomerRequest(order.getId(), createOrderDto);
 
@@ -46,19 +51,12 @@ public class OrderServiceSaga {
         String json = gson.toJson(requestDto);
 
         rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_CUSTOMER_REQUEST, json);
-    }
-
-    public void getProductsRequest(String orderId, List<String> products) {
-
-        ProductRequestDto requestDto = new ProductRequestDto(orderId, products);
-
-        String json = gson.toJson(requestDto);
-
-        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_PRODUCT_REQUEST, json);
+        System.out.println("Enviado queue QUEUE_CUSTOMER_REQUEST");
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CUSTOMER_RESPONSE)
     public void getCustomerResponse(String json) {
+        System.out.println("Recebido queue QUEUE_CUSTOMER_RESPONSE");
         Gson gson = new Gson();
         CustomerResponseDto customerResponse = gson.fromJson(json, CustomerResponseDto.class);
 
@@ -79,8 +77,19 @@ public class OrderServiceSaga {
         }
     }
 
+    public void getProductsRequest(String orderId, List<String> products) {
+
+        ProductRequestDto requestDto = new ProductRequestDto(orderId, products);
+
+        String json = gson.toJson(requestDto);
+
+        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_PRODUCT_REQUEST, json);
+        System.out.println("Enviado queue QUEUE_PRODUCT_REQUEST");
+    }
+
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PRODUCT_RESPONSE)
     public void getProductResponse(String json) {
+        System.out.println("Recebido queue QUEUE_PRODUCT_RESPONSE");
         Gson gson = new Gson();
         ProductResponseDto productResponseDto = gson.fromJson(json, ProductResponseDto.class);
 
@@ -89,8 +98,8 @@ public class OrderServiceSaga {
         if (orderFound.isPresent()) {
             Order order = new Order();
             order.setId(orderFound.get().getId());
-            System.out.println("Customer" + orderFound.get().getCustomer());
             order.setCustomer(orderFound.get().getCustomer());
+            order.setTimestamp(orderFound.get().getTimestamp());
             List<Product> productList = new ArrayList<>();
             List<String> productNames = new ArrayList<>();
 
@@ -102,16 +111,90 @@ public class OrderServiceSaga {
             order.setProducts(productNames);
             order.setTotalPrice(calculateTotalPrice(productList));
 
-            order.setStatus("Enviado para cozinha");
+            order.setStatus("Enviado para pagamento");
 
             orderRepository.save(order);
+
+            sendToPayment(order.getId());
         } else {
             new Exception("Order Id does not exist");
         }
     }
 
-    private void sendToKitchen() {
+    public void sendToPayment(String orderId) {
+        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_PAYMENT_REQUEST, orderId);
+        System.out.println("Enviado queue QUEUE_PAYMENT_REQUEST");
+    }
 
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_PAYMENT_RESPONSE)
+    public void getPaymentResponse(String json) {
+        System.out.println("Recebido queue QUEUE_PAYMENT_RESPONSE");
+        Gson gson = new Gson();
+        PaymentResponseDto paymentResponseDto = gson.fromJson(json, PaymentResponseDto.class);
+
+        Optional<Order> orderFound = orderRepository.findById(paymentResponseDto.getOrderId());
+
+        if (orderFound.isPresent()) {
+            Order order = new Order();
+            if (paymentResponseDto.isPaymentOk()) {
+                order.setStatus("Pagamento Aprovado");
+                order.setId(orderFound.get().getId());
+                order.setCustomer(orderFound.get().getCustomer());
+                order.setStatus(orderFound.get().getStatus());
+                order.setTimestamp(orderFound.get().getTimestamp());
+                order.setTotalPrice(orderFound.get().getTotalPrice());
+                order.setProducts(orderFound.get().getProducts());
+
+                orderRepository.save(order);
+
+                sendToKitchen(order);
+            } else {
+                order.setStatus("Pagamento Recusado");
+                order.setId(orderFound.get().getId());
+                order.setCustomer(orderFound.get().getCustomer());
+                order.setTimestamp(orderFound.get().getTimestamp());
+                order.setTotalPrice(orderFound.get().getTotalPrice());
+                order.setProducts(orderFound.get().getProducts());
+                orderRepository.save(order);
+            }
+        } else {
+            new Exception("Order Id does not exist");
+        }
+    }
+
+    private void sendToKitchen(Order order) {
+        String json = gson.toJson(order);
+
+        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_KITCHEN_REQUEST, json);
+        System.out.println("Enviado queue QUEUE_KITCHEN_REQUEST");
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_KITCHEN_RESPONSE)
+    public void getKitchenResponse(String json) {
+        System.out.println("Recebido queue QUEUE_KITCHEN_RESPONSE");
+        Gson gson = new Gson();
+        Order orderResponse = gson.fromJson(json, Order.class);
+
+        Optional<Order> orderFound = orderRepository.findById(orderResponse.getId());
+
+        if (orderFound.isPresent()) {
+            Order order = new Order();
+
+            order.setId(orderFound.get().getId());
+            order.setCustomer(orderResponse.getCustomer());
+            order.setStatus("Em preparo");
+            order.setTimestamp(orderFound.get().getTimestamp());
+            order.setProducts(orderResponse.getProducts());
+            order.setTotalPrice(orderFound.get().getTotalPrice());
+
+            orderRepository.save(order);
+
+            if (!orderResponse.getStatus().contains("Pedido Recebido")) {
+                new Exception("Erro ao enviar o pedido para a cozinha");
+            }
+        } else {
+            new Exception("Order Id does not exist");
+        }
     }
 
     private BigDecimal calculateTotalPrice(List<Product> productResponseDtoList) {

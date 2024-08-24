@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+  api:
+    image: lucasgoleiro/techchallenge-orders-api
+    ports:
+      - 8080:8080

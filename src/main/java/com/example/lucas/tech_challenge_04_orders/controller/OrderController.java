@@ -30,8 +30,8 @@ public class OrderController {
 
     @PostMapping
     ResponseEntity<String> createOrder(@RequestBody CreateOrderDto createOrderDto) throws Exception {
-        orderServiceSaga.createOrder(createOrderDto);
-        return new ResponseEntity<>("Pedido em análise", HttpStatus.CREATED);
+        var order = orderServiceSaga.createOrder(createOrderDto);
+        return new ResponseEntity<>(order.getId(), HttpStatus.CREATED);
     }
 
     @GetMapping
