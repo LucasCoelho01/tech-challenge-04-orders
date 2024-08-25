@@ -182,16 +182,42 @@ public class OrderServiceSaga {
 
             order.setId(orderFound.get().getId());
             order.setCustomer(orderResponse.getCustomer());
-            order.setStatus("Em preparo");
+            order.setStatus("Recebido");
             order.setTimestamp(orderFound.get().getTimestamp());
             order.setProducts(orderResponse.getProducts());
             order.setTotalPrice(orderFound.get().getTotalPrice());
 
             orderRepository.save(order);
 
-            if (!orderResponse.getStatus().contains("Pedido Recebido")) {
+            if (!orderResponse.getStatus().contains("Recebido")) {
                 new Exception("Erro ao enviar o pedido para a cozinha");
             }
+        } else {
+            new Exception("Order Id does not exist");
+        }
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_KITCHEN_UPDATE)
+    public void getKitchenUpdate(String json) {
+        System.out.println("Recebido queue QUEUE_KITCHEN_UPDATE");
+        Gson gson = new Gson();
+        Order orderResponse = gson.fromJson(json, Order.class);
+
+        Optional<Order> orderFound = orderRepository.findById(orderResponse.getId());
+
+        if (orderFound.isPresent()) {
+            Order order = new Order();
+
+            order.setId(orderFound.get().getId());
+            order.setCustomer(orderResponse.getCustomer());
+            order.setStatus(orderResponse.getStatus());
+            order.setTimestamp(orderFound.get().getTimestamp());
+            order.setProducts(orderResponse.getProducts());
+            order.setTotalPrice(orderFound.get().getTotalPrice());
+
+            orderRepository.save(order);
+
+            System.out.println("Status do pedido alterado");
         } else {
             new Exception("Order Id does not exist");
         }

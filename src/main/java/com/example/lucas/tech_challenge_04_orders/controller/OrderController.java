@@ -2,6 +2,7 @@ package com.example.lucas.tech_challenge_04_orders.controller;
 
 import com.example.lucas.tech_challenge_04_orders.entity.dtos.CreateOrderDto;
 import com.example.lucas.tech_challenge_04_orders.entity.Order;
+import com.example.lucas.tech_challenge_04_orders.entity.dtos.CreateOrderResponseDto;
 import com.example.lucas.tech_challenge_04_orders.entity.dtos.UpdateStatusDto;
 import com.example.lucas.tech_challenge_04_orders.service.OrderService;
 import com.example.lucas.tech_challenge_04_orders.service.OrderServiceSaga;
@@ -29,9 +30,10 @@ public class OrderController {
     }*/
 
     @PostMapping
-    ResponseEntity<String> createOrder(@RequestBody CreateOrderDto createOrderDto) throws Exception {
+    ResponseEntity<CreateOrderResponseDto> createOrder(@RequestBody CreateOrderDto createOrderDto) throws Exception {
         var order = orderServiceSaga.createOrder(createOrderDto);
-        return new ResponseEntity<>(order.getId(), HttpStatus.CREATED);
+        var createOrderResponseDto = new CreateOrderResponseDto(order.getId(), order.getStatus());
+        return new ResponseEntity<>(createOrderResponseDto, HttpStatus.CREATED);
     }
 
     @GetMapping

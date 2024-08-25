@@ -18,6 +18,7 @@ public class RabbitMQConfig {
 
     public static final String QUEUE_KITCHEN_REQUEST = "kitchenRequest";
     public static final String QUEUE_KITCHEN_RESPONSE = "kitchenResponse";
+    public static final String QUEUE_KITCHEN_UPDATE = "kitchenUpdate";
 
     @Bean
     public Queue queue() {
@@ -52,5 +53,8 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue queue_KitchenResponse() { return new Queue(QUEUE_KITCHEN_RESPONSE, true); }
+
+    @Bean
+    public Queue queue_KitchenUpdate() { return new Queue(QUEUE_KITCHEN_UPDATE, true); }
 }
 
